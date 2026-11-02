@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mini Coding Olympiad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f2f6f1;
+    --surface: #ffffff;
+    --ink: #13231a;
+    --muted: #55665b;
+    --line: #d5dfd6;
+    --green: #1e7b3a;
+    --green-ink: #ffffff;
+    --orange: #e67e22;
+    --pass-bg: #e3f4e7;
+    --pass: #1b6e34;
+    --fail-bg: #fdecdd;
+    --fail: #a24a08;
+    --editor-bg: #fbfdfb;
+    --editor-ink: #13231a;
+    --focus: #e67e22;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1712;
+      --surface: #16221b;
+      --ink: #e6efe8;
+      --muted: #9db1a3;
+      --line: #2a3a30;
+      --green: #3fae5f;
+      --green-ink: #07130b;
+      --orange: #f0993f;
+      --pass-bg: #163423;
+      --pass: #7fd69a;
+      --fail-bg: #3a2512;
+      --fail: #f3b27a;
+      --editor-bg: #0b120e;
+      --editor-ink: #e6efe8;
+      --focus: #f0993f;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1712;
+    --surface: #16221b;
+    --ink: #e6efe8;
+    --muted: #9db1a3;
+    --line: #2a3a30;
+    --green: #3fae5f;
+    --green-ink: #07130b;
+    --orange: #f0993f;
+    --pass-bg: #163423;
+    --pass: #7fd69a;
+    --fail-bg: #3a2512;
+    --fail: #f3b27a;
+    --editor-bg: #0b120e;
+    --editor-ink: #e6efe8;
+    --focus: #f0993f;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { height: 100%; }
+  body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Bricolage Grotesque", "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  /* Top bar */
+  .topbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 32px;
+    align-items: end;
+    justify-content: space-between;
+    padding: 20px clamp(16px, 3vw, 40px);
+    background: var(--green);
+    color: var(--green-ink);
+  }
+  .brand h1 {
+    margin: 0;
+    font-size: clamp(1.6rem, 3vw, 2.3rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .brand p { margin: 4px 0 0; opacity: 0.9; font-size: 0.95rem; }
+  .who { display: flex; flex-wrap: wrap; gap: 12px; }
+  .who label { display: block; font-size: 0.85rem; opacity: 0.95; margin-bottom: 2px; }
+  .who input {
+    width: 220px;
+    max-width: 100%;
+    padding: 8px 10px;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #13231a;
+  }
+  .who input:focus-visible { outline-color: #ffffff; border-color: var(--orange); }
+
+  /* Layout */
+  main {
+    display: grid;
+    grid-template-columns: minmax(280px, 430px) minmax(0, 1fr);
+    gap: 24px;
+    padding: 24px clamp(16px, 3vw, 40px) 48px;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+
+  /* Problem list */
+  .problems { padding: 8px; }
+  .problems ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .problem-btn {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-left: 5px solid transparent;
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: baseline;
+  }
+  .problem-btn:hover { background: var(--bg); }
+  .problem-btn[aria-current="true"] { background: var(--bg); border-left-color: var(--orange); font-weight: 600; }
+  .problem-btn .pts { color: var(--muted); font-size: 0.9rem; white-space: nowrap; }
+  .problem-btn .done { color: var(--pass); font-size: 0.9rem; font-weight: 600; white-space: nowrap; }
+
+  .statement { padding: 20px 22px 22px; margin-top: 16px; }
+  .statement h2 { margin: 0 0 4px; font-size: 1.5rem; letter-spacing: -0.01em; line-height: 1.2; }
+  .statement .meta { margin: 0 0 14px; color: var(--muted); font-size: 0.95rem; }
+  .statement p { margin: 0 0 12px; max-width: 62ch; }
+  .statement h3 { margin: 18px 0 6px; font-size: 1.05rem; }
+  .sig, .example {
+    font-family: "JetBrains Mono", ui-monospace, Consolas, monospace;
+    font-size: 0.9rem;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin: 0 0 12px;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .rule {
+    border-left: 5px solid var(--orange);
+    padding: 8px 12px;
+    background: var(--bg);
+    border-radius: 0 6px 6px 0;
+    margin: 14px 0 0;
+    font-size: 0.95rem;
+  }
+
+  /* Workspace */
+  .workspace { display: grid; gap: 16px; align-content: start; min-width: 0; }
+  .editor-wrap { overflow: hidden; }
+  .editor-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .editor-head strong { font-weight: 600; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    border: 2px solid var(--green);
+    background: var(--green);
+    color: var(--green-ink);
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn:hover:not(:disabled) { filter: brightness(1.08); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn.ghost:hover:not(:disabled) { border-color: var(--green); filter: none; }
+
+  textarea#code {
+    display: block;
+    width: 100%;
+    min-height: 280px;
+    height: 46vh;
+    max-height: 640px;
+    resize: vertical;
+    border: 0;
+    padding: 14px 16px;
+    background: var(--editor-bg);
+    color: var(--editor-ink);
+    font-family: "JetBrains Mono", ui-monospace, Consolas, monospace;
+    font-size: 1rem;
+    line-height: 1.55;
+    tab-size: 4;
+  }
+  textarea#code:focus-visible { outline-offset: -3px; }
+
+  /* Results */
+  .results { padding: 16px 18px 18px; }
+  .results h2 { margin: 0 0 10px; font-size: 1.2rem; }
+  .empty { color: var(--muted); margin: 0; }
+  .summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 18px;
+    margin: 0 0 14px;
+  }
+  .score { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+  .score small { font-size: 1rem; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+  .verdict { font-weight: 600; }
+  .verdict.ok { color: var(--pass); }
+  .verdict.bad { color: var(--fail); }
+
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 520px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; font-size: 0.9rem; color: var(--muted); }
+  td.mono { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-size: 0.9rem; }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+  .badge.pass { background: var(--pass-bg); color: var(--pass); }
+  .badge.fail { background: var(--fail-bg); color: var(--fail); }
+
+  pre.output {
+    margin: 12px 0 0;
+    padding: 10px 12px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-family: "JetBrains Mono", ui-monospace, Consolas, monospace;
+    font-size: 0.88rem;
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+  .note { margin: 12px 0 0; color: var(--muted); font-size: 0.92rem; }
+  .error-box {
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    border-left: 5px solid var(--orange);
+    background: var(--fail-bg);
+    color: var(--ink);
+    border-radius: 0 6px 6px 0;
+  }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 0 16px 28px; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .btn, .problem-btn { transition: background-color 0.15s, border-color 0.15s, filter 0.15s; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <h1>Mini Coding Olympiad</h1>
+    <p>Computer Programming 1, C language</p>
+  </div>
+  <div class="who">
+    <div>
+      <label for="studentName">Your name</label>
+      <input id="studentName" type="text" autocomplete="name" maxlength="60">
+    </div>
+    <div>
+      <label for="teamName">Team name</label>
+      <input id="teamName" type="text" maxlength="40">
+    </div>
+  </div>
+</header>
+
+<main>
+  <section aria-label="Problems">
+    <div class="panel problems">
+      <ul id="problemList"></ul>
+    </div>
+    <article class="panel statement" id="statement" aria-live="polite"></article>
+  </section>
+
+  <section class="workspace" aria-label="Workspace">
+    <div class="panel editor-wrap">
+      <div class="editor-head">
+        <strong id="editorTitle">Your code</strong>
+        <div class="actions">
+          <button class="btn ghost" id="resetBtn" type="button">Reset code</button>
+          <button class="btn" id="runBtn" type="button">Run tests</button>
+        </div>
+      </div>
+      <label for="code" class="sr-only" style="position:absolute;left:-9999px;">C code</label>
+      <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea>
+    </div>
+
+    <div class="panel results" id="results" aria-live="polite">
+      <h2>Results</h2>
+      <p class="empty">Write your function, then press Run tests (or Ctrl+Enter).</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Your code runs on a shared online judge. If many classmates press Run at once, wait a few seconds and try again.
+</footer>
+
+<script>
+/* ============================================================
+   SETTINGS (teacher: change these)
+   ============================================================ */
+const CONFIG = {
+  judge0Url: "https://ce.judge0.com", // the code runner. Use your own server URL if you host Judge0.
+  languageId: 50,                      // 50 = C (GCC) on Judge0 CE. Check /languages on your runner if this changes.
+  authToken: "",                       // only needed if your runner asks for a token
+  cooldownSeconds: 3                   // wait time between runs, to protect the shared runner
+};
+
+/* ============================================================
+   PROBLEMS (teacher: add more problems here)
+   - starter : code shown in the editor
+   - harness : hidden C program. The marker STUDENT_CODE_HERE (written as a C comment) is replaced
+               by the student's function. It reads one test per line from the input and prints
+               one answer per line.
+   - tests   : call = label shown to students, stdin = what the harness reads,
+               expected = the correct output line, hidden = true hides the details
+   ============================================================ */
+const PROBLEMS = [
+  {
+    id: "add",
+    title: "Add Two Numbers",
+    points: 10,
+    topic: "Functions",
+    description: [
+      "Write a function that takes two whole numbers and returns their sum."
+    ],
+    signature: "int add(int a, int b)",
+    example: "add(2, 3)  returns  5",
+    starter:
+"int add(int a, int b) {\n    // write your code here\n\n}\n",
+    harness:
+"#include <stdio.h>\n#line 1\n/*STUDENT*/\nint main(void) {\n    int a, b;\n    while (scanf(\"%d %d\", &a, &b) == 2) {\n        printf(\"%d\\n\", add(a, b));\n    }\n    return 0;\n}\n",
+    tests: [
+      { call: "add(2, 3)",       stdin: "2 3",       expected: "5" },
+      { call: "add(10, 20)",     stdin: "10 20",     expected: "30" },
+      { call: "add(-4, 9)",      stdin: "-4 9",      expected: "5" },
+      { call: "Hidden test 4",   stdin: "0 0",       expected: "0",    hidden: true },
+      { call: "Hidden test 5",   stdin: "1000 2345", expected: "3345", hidden: true }
+    ]
+  },
+  {
+    id: "bigger",
+    title: "Bigger Number",
+    points: 10,
+    topic: "If/else and functions",
+    description: [
+      "Write a function that takes two whole numbers and returns the bigger one.",
+      "If both numbers are equal, return that number."
+    ],
+    signature: "int bigger(int a, int b)",
+    example: "bigger(3, 7)  returns  7",
+    starter:
+"int bigger(int a, int b) {\n    // write your code here\n\n}\n",
+    harness:
+"#include <stdio.h>\n#line 1\n/*STUDENT*/\nint main(void) {\n    int a, b;\n    while (scanf(\"%d %d\", &a, &b) == 2) {\n        printf(\"%d\\n\", bigger(a, b));\n    }\n    return 0;\n}\n",
+    tests: [
+      { call: "bigger(3, 7)",    stdin: "3 7",   expected: "7" },
+      { call: "bigger(9, 2)",    stdin: "9 2",   expected: "9" },
+      { call: "bigger(5, 5)",    stdin: "5 5",   expected: "5" },
+      { call: "Hidden test 4",   stdin: "-3 -8", expected: "-3", hidden: true }
+    ]
+  }
+];
+
+/* ============================================================
+   APP
+   ============================================================ */
+const $ = (id) => document.getElementById(id);
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* storage can be blocked */ } }
+};
+
+let current = PROBLEMS[0];
+let best = {};       // best score per problem this session
+let lastResult = null;
+let cooling = false;
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function renderProblemList() {
+  const list = $("problemList");
+  list.innerHTML = "";
+  PROBLEMS.forEach((p, i) => {
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "problem-btn";
+    if (p.id === current.id) b.setAttribute("aria-current", "true");
+    const status = best[p.id] !== undefined
+      ? `<span class="done">${best[p.id]}/${p.points}</span>`
+      : `<span class="pts">${p.points} pts</span>`;
+    b.innerHTML = `<span>${i + 1}. ${esc(p.title)}</span>${status}`;
+    b.addEventListener("click", () => selectProblem(p.id));
+    li.appendChild(b);
+    list.appendChild(li);
+  });
+}
+
+function renderStatement() {
+  const p = current;
+  $("statement").innerHTML =
+    `<h2>${esc(p.title)}</h2>` +
+    `<p class="meta">${p.points} points, ${esc(p.topic)}</p>` +
+    p.description.map((d) => `<p>${esc(d)}</p>`).join("") +
+    `<h3>Function to write</h3><div class="sig">${esc(p.signature)}</div>` +
+    `<h3>Example</h3><div class="example">${esc(p.example)}</div>` +
+    `<p class="rule">Write only the function. Do not write <code>main()</code>, and do not use <code>printf</code> inside it. Use <code>return</code> to give back the answer.</p>`;
+  $("editorTitle").textContent = `Your code for: ${p.title}`;
+}
+
+function selectProblem(id) {
+  saveCode();
+  current = PROBLEMS.find((p) => p.id === id);
+  $("code").value = store.get("olympiad:code:" + current.id) || current.starter;
+  lastResult = null;
+  renderProblemList();
+  renderStatement();
+  $("results").innerHTML = `<h2>Results</h2><p class="empty">Write your function, then press Run tests (or Ctrl+Enter).</p>`;
+}
+
+function saveCode() { store.set("olympiad:code:" + current.id, $("code").value); }
+
+/* Compare the runner's output with the expected answers */
+function grade(stdout, tests) {
+  const got = (stdout || "").replace(/\r/g, "").split("\n").map((l) => l.trim());
+  while (got.length && got[got.length - 1] === "") got.pop();
+  const rows = tests.map((t, i) => {
+    const out = got[i] === undefined ? "(no output)" : got[i];
+    return { test: t, output: out, pass: out === t.expected };
+  });
+  return { rows, lineCountMismatch: got.length !== tests.length };
+}
+
+async function callJudge(source, stdin) {
+  const headers = { "Content-Type": "application/json" };
+  if (CONFIG.authToken) headers["X-Auth-Token"] = CONFIG.authToken;
+  const res = await fetch(CONFIG.judge0Url + "/submissions?base64_encoded=false&wait=true", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      source_code: source,
+      language_id: CONFIG.languageId,
+      stdin: stdin,
+      cpu_time_limit: 2
+    })
+  });
+  if (res.status === 429) throw new Error("RATE_LIMIT");
+  if (!res.ok) throw new Error("HTTP_" + res.status);
+  return res.json();
+}
+
+function showError(msg) {
+  $("results").innerHTML = `<h2>Results</h2><div class="error-box">${msg}</div>`;
+}
+
+async function runTests() {
+  if (cooling) return;
+  const code = $("code").value;
+  saveCode();
+
+  if (/\bmain\s*\(/.test(code)) {
+    showError("Remove <code>main()</code> from your code. The site already has one and calls your function for you.");
+    return;
+  }
+  if (code.trim().length === 0) {
+    showError("Your code is empty. Write the function first.");
+    return;
+  }
+
+  const btn = $("runBtn");
+  btn.disabled = true;
+  btn.textContent = "Running…";
+  $("results").innerHTML = `<h2>Results</h2><p class="empty">Compiling and running your code…</p>`;
+
+  const source = current.harness.split("/*STUDENT*/").join(code);
+  const stdin = current.tests.map((t) => t.stdin).join("\n") + "\n";
+
+  try {
+    const r = await callJudge(source, stdin);
+    const sid = r.status && r.status.id;
+
+    if (sid === 6) {
+      showCompileError(r.compile_output);
+    } else if (sid === 5) {
+      showError("Time limit exceeded. Check your code for a loop that never ends.");
+    } else if (sid >= 7 && sid <= 12) {
+      showError("Your program crashed while running (runtime error). Check your function for mistakes.");
+    } else if (sid >= 13) {
+      showError("The code runner had a problem. Wait a few seconds and press Run tests again.");
+    } else {
+      showResults(grade(r.stdout, current.tests));
+    }
+  } catch (e) {
+    if (e.message === "RATE_LIMIT") {
+      showError("Too many runs at the same time. Wait about 10 seconds, then press Run tests again.");
+    } else {
+      showError("Could not reach the code runner. Check your internet connection and try again. If it keeps happening, tell your teacher.");
+    }
+  }
+
+  btn.textContent = "Run tests";
+  startCooldown();
+}
+
+function showCompileError(text) {
+  $("results").innerHTML =
+    `<h2>Results</h2><div class="error-box"><strong>Your code did not compile.</strong> Fix the error below, then run again.</div>` +
+    `<pre class="output">${esc((text || "").replace(/prog\.c|main\.c/g, "your code"))}</pre>`;
+}
+
+function showResults(g) {
+  const total = g.rows.length;
+  const passed = g.rows.filter((r) => r.pass).length;
+  const points = Math.round(current.points * passed / total);
+  const all = passed === total;
+
+  if (best[current.id] === undefined || points > best[current.id]) best[current.id] = points;
+  lastResult = { problem: current, passed, total, points };
+  renderProblemList();
+
+  const body = g.rows.map((r, i) => {
+    const t = r.test;
+    const show = t.hidden && !r.pass ? "hidden" : r.output;
+    const expected = t.hidden ? "hidden" : t.expected;
+    return `<tr>
+      <td>${i + 1}</td>
+      <td class="mono">${esc(t.call)}</td>
+      <td class="mono">${esc(expected)}</td>
+      <td class="mono">${esc(show)}</td>
+      <td><span class="badge ${r.pass ? "pass" : "fail"}">${r.pass ? "Pass" : "Fail"}</span></td>
+    </tr>`;
+  }).join("");
+
+  $("results").innerHTML =
+    `<h2>Results</h2>
+     <div class="summary">
+       <div class="score">${points}<small> / ${current.points} points</small></div>
+       <div class="verdict ${all ? "ok" : "bad"}">${passed} of ${total} tests passed${all ? ". Nice work!" : "."}</div>
+     </div>
+     <div class="table-wrap"><table>
+       <thead><tr><th>#</th><th>Test</th><th>Expected</th><th>Your output</th><th>Result</th></tr></thead>
+       <tbody>${body}</tbody>
+     </table></div>` +
+    (g.lineCountMismatch
+      ? `<p class="note">Your program printed a different number of lines than expected. Remove any <code>printf</code> from your function and use <code>return</code> instead.</p>`
+      : "") +
+    `<p class="note">Hidden tests only show Pass or Fail.</p>
+     <div class="actions" style="margin-top:14px"><button class="btn ghost" id="copyBtn" type="button">Copy my result</button></div>`;
+
+  $("copyBtn").addEventListener("click", copyResult);
+}
+
+async function copyResult() {
+  if (!lastResult) return;
+  const name = $("studentName").value.trim() || "(no name)";
+  const team = $("teamName").value.trim() || "(no team)";
+  const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const text = `${name} | Team: ${team} | ${lastResult.problem.title} | ${lastResult.passed}/${lastResult.total} tests | ${lastResult.points} pts | ${time}`;
+  const btn = $("copyBtn");
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = "Copied";
+  } catch (e) {
+    btn.textContent = "Copy failed. Show this screen to your teacher.";
+  }
+}
+
+function startCooldown() {
+  cooling = true;
+  const btn = $("runBtn");
+  let left = CONFIG.cooldownSeconds;
+  btn.disabled = true;
+  const tick = () => {
+    if (left <= 0) {
+      cooling = false;
+      btn.disabled = false;
+      btn.textContent = "Run tests";
+      return;
+    }
+    btn.textContent = `Run again in ${left}s`;
+    left -= 1;
+    setTimeout(tick, 1000);
+  };
+  tick();
+}
+
+/* Editor niceties: Tab inserts 4 spaces, Ctrl+Enter runs */
+$("code").addEventListener("keydown", (e) => {
+  if (e.key === "Tab") {
+    e.preventDefault();
+    const ta = e.target, s = ta.selectionStart, en = ta.selectionEnd;
+    ta.value = ta.value.slice(0, s) + "    " + ta.value.slice(en);
+    ta.selectionStart = ta.selectionEnd = s + 4;
+  } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    runTests();
+  }
+});
+$("code").addEventListener("input", saveCode);
+$("runBtn").addEventListener("click", runTests);
+$("resetBtn").addEventListener("click", () => {
+  if (confirm("Reset your code for this problem to the starting code?")) {
+    $("code").value = current.starter;
+    saveCode();
+  }
+});
+["studentName", "teamName"].forEach((id) => {
+  $(id).value = store.get("olympiad:" + id) || "";
+  $(id).addEventListener("input", () => store.set("olympiad:" + id, $(id).value));
+});
+
+/* Start */
+$("code").value = store.get("olympiad:code:" + current.id) || current.starter;
+renderProblemList();
+renderStatement();
+</script>
+</body>
+</html>
